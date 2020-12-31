@@ -1,0 +1,256 @@
+
+CREATE TABLE BB_Department (
+	idDepartment number(2)  ,
+	DeptName varchar2(25) ,
+	DeptDesc varchar2(100) ,
+	DeptImage varchar2(25) ,
+	CONSTRAINT dept_id_pk2 PRIMARY KEY(idDepartment) );
+  
+	CREATE TABLE BB_Product (
+	idProduct number(2) ,
+	ProductName varchar2(25) ,
+	Description varchar2(100) ,
+	ProductImage varchar2(25),
+	Price number(6,2),
+	SaleStart date,
+	SaleEnd date,
+	SalePrice number(6,2),
+	Active number(1),
+	Featured number(1),
+	FeatureStart date,
+	FeatureEnd date,
+        Type char(1),
+        idDepartment number(2),
+	 CONSTRAINT prod_id_pk PRIMARY KEY(idProduct),
+         CONSTRAINT prod_idDept_fk FOREIGN KEY (idDepartment)
+           REFERENCES BB_Department (idDepartment) );
+	
+
+CREATE SEQUENCE bb_prodid_seq start with 15;
+Alter table bb_product
+ ADD (stock number(5,1),
+      ordered number(3),
+      reorder number(3) );
+ 
+CREATE TABLE bb_Product_request 
+  (idRequest NUMBER(4),
+   idproduct number(2),
+   dtrequest DATE DEFAULT SYSDATE,
+   dtrecd DATE,
+   cost number(6,2),
+   qty number(3),
+   idvender number(3),
+     CONSTRAINT prodreq_id_pk PRIMARY KEY (idrequest),
+     CONSTRAINT prodreq_idprod_fk FOREIGN KEY (idProduct)
+                     REFERENCES bb_product (idproduct) );
+
+CREATE TABLE BB_Shopper (
+	idShopper number(4),
+	FirstName varchar2(15),
+	LastName varchar2(20),
+	Address varchar2(40),
+	City varchar2(20),
+	State char(2),
+	ZipCode varchar2(15),
+	Phone varchar2(10),
+	Fax varchar2(10),
+	Email varchar2(25),
+	UserName varchar2(8),
+	Password varchar2(8),
+	Cookie number(4) DEFAULT 0,
+	dtEntered date DEFAULT SYSDATE,
+	Province varchar2(15),
+	Country varchar2(15),
+	CONSTRAINT shopper_id_pk PRIMARY KEY(idShopper) );
+
+create sequence bb_shopper_seq   start with 30;
+
+  Alter table bb_shopper
+  ADD (promo CHAR(1));
+  
+CREATE TABLE bb_ProductOption (
+	idProductoption number(3),
+	idoption number(2),
+	idProduct number(2),
+	CONSTRAINT prodattr_id_pk PRIMARY KEY (idProductoption),
+        CONSTRAINT prodopt_prodid_fk FOREIGN KEY(idProduct) REFERENCES BB_Product(idProduct) );
+
+create sequence bb_poption_seq  start with 30;
+
+CREATE TABLE bb_ProductOptionCategory (
+	idOptionCategory number(2),
+	CategoryName varchar2(25),
+	CONSTRAINT prodoptcat_id_pk PRIMARY KEY(idOptionCategory) );
+
+CREATE TABLE bb_ProductOptionDetail (
+	idoption number(2),
+	OptionName varchar2(25),
+	idOptionCategory number(2),
+	CONSTRAINT prodoptdet_id_pk PRIMARY KEY (idOption),
+        CONSTRAINT prodoptdet_idoptcat_fk FOREIGN KEY(idOptionCategory) REFERENCES bb_ProductOptionCategory(idOptionCategory) );
+  
+  
+ CREATE TABLE bb_Basket (
+	idBasket number(5),
+	Quantity number(2),
+	idShopper number(4),
+	OrderPlaced number(1),
+	SubTotal number(7,2),
+	Total number(7,2),
+	Shipping number(5,2),
+	Tax number(5,2),
+	dtCreated date DEFAULT SYSDATE,
+	Promo number(2),
+	ShipFirstName varchar2(10),
+	ShipLastName varchar2(20),
+	ShipAddress varchar2(40),
+	ShipCity varchar2(20),
+	ShipState varchar2(2),
+	ShipZipCode varchar2(15),
+	ShipPhone varchar2(10),
+	ShipFax varchar2(10),
+	ShipEmail varchar2(25),
+	BillFirstName varchar2(10),
+	BillLastName varchar2(20),
+	BillAddress varchar2(40),
+	BillCity varchar2(20),
+	BillState varchar2(2),
+	BillZipCode varchar2(15),
+	BillPhone varchar2(10),
+	BillFax varchar2(10),
+	BillEmail varchar2(25),
+	dtOrdered date DEFAULT SYSDATE,
+	ShipProvince varchar2(20),
+	ShipCountry varchar2(20),
+	BillProvince varchar2(20),
+	BillCountry varchar2(20),
+	CardType char(1) ,
+	CardNumber varchar2(20) ,
+	ExpMonth char(2),
+        ExpYear char(4),
+	CardName varchar2(25),
+        shipbill char(1) default 'N',
+        ShipFlag char(1) default 'N',
+        CONSTRAINT bskt_id_pk PRIMARY KEY(idBasket),
+         CONSTRAINT bskt_idshopper_fk FOREIGN KEY (idShopper)
+           REFERENCES bb_Shopper(idShopper) );
+		   
+Create sequence bb_idBasket_seq   start with 25; 
+   
+   
+  CREATE TABLE bb_basketItem (
+	idBasketItem number(2),
+	idProduct number(2),
+	Price number(6,2),
+	Quantity number(2),
+	idBasket number(5) ,
+	option1 number(2),
+	option2 number(2),
+	CONSTRAINT bsktitem_id_pk PRIMARY KEY (idBasketItem),
+        CONSTRAINT bsktitem_bsktid_fk FOREIGN KEY (idBasket) 
+          REFERENCES bb_Basket(idBasket),
+        CONSTRAINT bsktitem_idprod_fk FOREIGN KEY (idproduct) 
+          REFERENCES bb_Product(idproduct) );
+
+Create sequence bb_idBasketitem_seq  start with 50;
+  
+
+
+CREATE TABLE bb_Shipping (
+	idRange NUMBER(2),
+	Low NUMBER(3),
+	High NUMBER(3),
+	Fee NUMBER(6,2),
+	CONSTRAINT ship_idrange_pk PRIMARY KEY (idRange) ); 
+
+CREATE TABLE bb_Tax (
+	idState NUMBER(2),
+	State char(2),
+	TaxRate NUMBER(4,3),
+	CONSTRAINT tax_idstate_pk PRIMARY KEY(idState) ); 
+	
+	CREATE TABLE bb_BasketStatus (
+	idStatus number(5),
+	idBasket number(5),
+	idStage number(1),
+	dtStage date,
+	Notes varchar2(50),
+        shipper varchar2(5),
+	ShippingNum varchar2(20),
+	CONSTRAINT  basketstatus_pk PRIMARY KEY (idStatus),
+        CONSTRAINT BasketStatus_idBasket_fk FOREIGN KEY (idBasket)
+          REFERENCES bb_basket(idBasket) );
+
+CREATE SEQUENCE bb_status_seq start with 15;
+
+
+Create table bb_promolist (
+   idshopper number(4),
+   month CHAR(3),
+   year CHAR(4),
+   promo_flag CHAR(2),
+   Used CHAR(1) DEFAULT 'N',
+     CONSTRAINT promo_uk UNIQUE (idshopper,month,year),
+     CONSTRAINT promo_idshopper_fk FOREIGN KEY (idshopper)
+        REFERENCES bb_shopper(idshopper) );
+
+Create table bb_promo (
+   idPromo char(1),
+   amount number(5,2) );
+
+create table bb_blocktest
+  ( testcol varchar2(15) );
+  
+create table bb_test1
+  (col1 number(2));
+  
+create table bb_test2
+  (col1 number(2));
+ 
+ create table bb_prod_sales (
+     idproduct NUMBER(2),
+     month char(3),
+     year char(4),
+     qty number(5),
+     total number(6,2) );
+
+create table bb_shop_sales (
+     idshopper NUMBER(4),
+     total number(6,2) );
+
+CREATE SEQUENCE bb_prodreq_seq; 
+
+CREATE TABLE bb_audit_logon
+  ( userid VARCHAR2(10),
+    logdate DATE );
+
+CREATE TABLE bb_trans_log (
+   shopper NUMBER(4),
+   appaction VARCHAR2(20),
+   errcode VARCHAR2(10),
+   errmsg VARCHAR2(80) );
+
+CREATE TABLE EMPLOYEE (
+ EMPNO               NUMBER(4),
+ ENAME               VARCHAR2(10),
+ JOB                 VARCHAR2(9),
+ MGR                 NUMBER(4),
+ HIREDATE            DATE,
+ SAL                 NUMBER(7,2),
+ COMM                NUMBER(7,2),
+ DEPTNO              NUMBER(2) NOT NULL,
+ CONSTRAINT EMP_EMPNO_PK PRIMARY KEY (EMPNO),
+ CONSTRAINT emp_sal_ck CHECK (sal < 100000) );  
+
+
+CREATE OR REPLACE VIEW bb_ship_vu
+ AS SELECT b.idbasket, b.shipflag, bs.idstage, bs.dtstage, bs.notes,
+            bs.shipper, bs.shippingnum
+      FROM bb_basket b, bb_basketstatus bs
+      WHERE b.idBasket = bs.idBasket;
+
+  
+
+create view bb_basketitem_vu as
+   select * from bb_basketitem;
+ 

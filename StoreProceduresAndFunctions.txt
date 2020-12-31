@@ -1,0 +1,97 @@
+
+create or replace PROCEDURE BASKET_ADD_SP 
+(
+  P_BASKETID IN NUMBER 
+, P_PRODUCTID IN NUMBER 
+, P_QUANTITY IN NUMBER 
+, P_PRICE IN NUMBER 
+, P_SIZECODE IN NUMBER 
+, P_FORMCODE IN NUMBER 
+) AS 
+BEGIN
+  INSERT INTO bb_basketitem (idbasketitem, idbasket, idproduct, quantity, price, option1, option2)
+  values (BB_IDBASKETITEM_SEQ.nextval, p_basketid, p_productid, p_quantity, p_price, p_sizecode, p_formcode);
+  COMMIT;
+END BASKET_ADD_SP;
+
+create or replace PROCEDURE PROD_ADD_SP 
+(
+  PRODUCT_NAME IN VARCHAR2 
+, DESCRIPTION IN VARCHAR2 
+, IMAGE_FILENAME IN VARCHAR2 
+, PRICE IN NUMBER 
+, ACTIVE IN NUMBER 
+) AS 
+BEGIN
+  INSERT INTO bb_product (idproduct, productname, description, productimage, price, active) 
+  VALUES (BB_PRODID_SEQ.nextval, product_name, description, image_filename, price, active);
+  COMMIT;
+END PROD_ADD_SP;
+
+create or replace PROCEDURE STATUS_SHIP_SP 
+(
+  P_BASKETID IN NUMBER 
+, P_DATE IN DATE 
+, P_SHIPPER IN VARCHAR2 
+, P_SHIPNUM IN VARCHAR2 
+) AS 
+BEGIN
+  INSERT INTO bb_basketstatus (idstatus, idbasket, idstage, dtstage,
+ shipper, shippingnum)
+ VALUES (bb_status_seq.NEXTVAL, p_basketid, 3, p_date, p_shipper, p_shipnum);
+ COMMIT;
+END STATUS_SHIP_SP;
+
+create or replace PROCEDURE TAX_COST_SP 
+(
+  SHOPPER_STATE IN VARCHAR2 
+, BASKET_SUBTOTAL IN NUMBER 
+, TAX OUT NUMBER 
+) AS 
+BEGIN
+  SELECT taxrate*basket_subtotal into tax from bb_tax where state = shopper_state;
+  tax := tax;
+END TAX_COST_SP;
+
+create or replace PROCEDURE UPDATE_BB_PRODUCT 
+(
+  p_id IN NUMBER 
+, p_description IN VARCHAR2 
+) AS 
+BEGIN
+    UPDATE bb_product SET description = p_description WHERE idproduct = p_id;
+COMMIT;
+END UPDATE_BB_PRODUCT;
+
+create or replace FUNCTION CK_SALE_SF 
+(
+  P_PRODUCTID IN NUMBER 
+, P_DATE IN DATE 
+) RETURN VARCHAR 
+IS 
+  result varchar(20);
+  productid NUMBER;
+  cursor c1 is select idproduct from bb_product where p_date >= salestart and p_date <= saleend and p_productid = p_productid;
+BEGIN
+  OPEN c1;
+  FETCH c1 into productid;
+  IF productid > 0 then
+    result := 'On Sale';
+  ELSE
+    result := 'Not On Sale';
+  END IF;
+  RETURN result;
+END CK_SALE_SF;
+
+create or replace FUNCTION TOT_PURCH_SF 
+(
+  P_SHOPPERID IN NUMBER 
+) RETURN NUMBER 
+IS
+  result NUMBER(5,2);
+  cursor c1 is select sum(total) from bb_basket where idshopper = p_shopperid;
+BEGIN
+  OPEN c1;
+  FETCH c1 into result;
+  RETURN result;
+END TOT_PURCH_SF;
